@@ -1,7 +1,42 @@
 services:
-  php:
-    image: php:7.2-apache
-    ports:
-      - 8080:80
-    volumes:
-      - ./src:/var/www/html/
+    wordpress:
+        image: wordpress
+        restart: always
+        ports:
+            - 8080:80
+            - 443
+        environment:
+            WORDPRESS_DB_HOST: mysql
+            WORDPRESS_DB_USER: ${DB_USER}
+            WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+            WORDPRESS_DB_NAME: ${DB_NAME}
+        volumes:
+            - ./themes:/var/www/html/wp-content/themes/
+            - ./plugins:/var/www/html/wp-content/plugins/
+        networks:
+            - wp
+    mysql:
+        image: mysql:5.7
+        restart: always
+        environment:
+            MYSQL_DATABASE: ${DB_NAME}
+            MYSQL_USER: ${DB_USER}
+            MYSQL_PASSWORD: ${DB_PASSWORD}
+            MYSQL_RANDOM_ROOT_PASSWORD: ${DB_PASSWORD}
+        volumes:
+            - ./db:/var/lib/mysql
+        networks:
+            - wp
+    phpmyadmin:
+        image: phpmyadmin
+        restart: always
+        ports:
+            - ${PORT}:80
+        environment:
+            PMA_HOST: mysql
+            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+            MYSQL_PASSWORD: ${DB_PASSWORD}
+        networks:
+            - wp
+networks:
+    wp:
